@@ -8,7 +8,14 @@ import joblib
 import os
 from fastapi import FastAPI
 import openai 
-openai.api_key = ""
+
+def get_api_key():
+    # 환경 변수에서 API 키 가져오기
+    api_key = os.environ.get("OPENAI_API")
+    if not api_key:
+        raise ValueError("API 키를 찾을 수 없습니다. 환경 변수를 설정하세요.")
+    return api_key
+openai.api_key = get_api_key()
 
 app = FastAPI()
 
