@@ -29,6 +29,10 @@ class UserRequest(BaseModel):
 class PredictionResult(BaseModel):
     mbti : str
 
+@app.get("/")
+def home():
+    return "hello FastAPI Server"
+
 @app.post("/mbti_prediction", response_model=PredictionResult)
 def predict_mbti(request : UserRequest):
     #한글로 받아온 user_prompt 영어로 번역
@@ -47,7 +51,7 @@ def predict_mbti(request : UserRequest):
 
     return response
 
-# ngrok http 
+
 
 # 영어로 번역하는 함수
 def translate_to_english(text):
