@@ -65,19 +65,19 @@ if recreate_model:
 else:
     svm_model = joblib.load('mbti_svm.pkl')
 
-recreate_user_vector = False
-if not os.path.isfile('user_vector.pkl'):
-    recreate_user_vector = True
+recreate_user_translated = False
+if not os.path.isfile('user_translated.pkl'):
+    recreate_user_translated = True
 
-if recreate_user_vector:    
-    user_vector = []
+if recreate_user_translated:    
+    user_translated = []
 else:
     try:
-        with open('user_vector.pkl', 'rb') as file:
-            user_vector = pickle.load(file)
+        with open('user_translated.pkl', 'rb') as file:
+            user_translated = pickle.load(file)
     except Exception as e:
         print("Error loading pickle file:", e)
-        user_vector = []  # 파일을 읽을 수 없는 경우 빈 리스트로 초기화
+        user_translated = []  # 파일을 읽을 수 없는 경우 빈 리스트로 초기화
 
 #사용자 텍스트 입력
 user_text = input()
@@ -93,9 +93,9 @@ user_vector.append(user_text_vector)
 user_embeddings = np.array(user_embeddings)
 '''
 # MBTI 예측 
-# user_vector에 사용자 입력을 계속 추가하여 MBTI를 갱신
-user_vector.append(translate_to_english(user_text))
-combined_text = ' '.join(map(str, user_vector))  # 두 개의 텍스트를 공백을 이용하여 통합
+# user_translated에 사용자 입력을 계속 추가하여 MBTI를 갱신
+user_translated.append(translate_to_english(user_text))
+combined_text = ' '.join(map(str, user_translated))  # 두 개의 텍스트를 공백을 이용하여 통합
 combined_prediction = svm_model.predict([combined_text])  # 통합된 텍스트를 모델에 입력하여 예측 #정확도가 가장 높은 mbti를 결과로 반환
 
 # all_messages 생성
@@ -137,5 +137,5 @@ print(all_messages)
 # 코드가 반복 실행되면서 all_messages, user_embeddings에 각각 텍스트들이 계속 저장
 with open('all_messages.pkl', 'wb') as file:
     pickle.dump(all_messages, file)
-with open('user_vector.pkl', 'wb') as file:
-    pickle.dump(user_vector, file)
+with open('user_translated.pkl', 'wb') as file:
+    pickle.dump(user_translated, file)
