@@ -3,21 +3,53 @@ from sklearn.model_selection import train_test_split
 from sklearn.svm import LinearSVC
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.pipeline import Pipeline
-import pickle
 import joblib
 import os
+import logging
+from pydantic import BaseModel
 from fastapi import FastAPI
 import openai 
-
+from dotenv import load_dotenv
+'''
 def get_api_key():
     # 환경 변수에서 API 키 가져오기
     api_key = os.environ.get("OPENAI_API")
     if not api_key:
         raise ValueError("API 키를 찾을 수 없습니다. 환경 변수를 설정하세요.")
     return api_key
-openai.api_key = get_api_key()
+'''
+load_dotenv()
+openai.api_key = os.getenv("API_KEY")
 
 app = FastAPI()
+
+class UserRequest(BaseModel):
+    user_prompt_list : list
+
+class PredictionResult(BaseModel):
+    mbti : str
+
+@app.post("/mbti_prediction", response_model=PredictionResult)
+def predict_mbti(request : UserRequest):
+    #한글로 받아온 user_prompt 영어로 번역
+    user_prompt_list = request.user_prompt_list
+    user_prompt_english = translate_to_english(user_prompt_list)
+
+    # MBTI 예측 
+    combined_text = ' '.join(map(str, user_prompt_english))  # 두 개의 텍스트를 공백을 이용하여 통합
+    combined_prediction = svm_model.predict([combined_text])  # 통합된 텍스트를 모델에 입력하여 예측 #정확도가 가장 높은 mbti를 결과로 반환
+
+    response = {
+        'mbti' : combined_prediction[0]
+    }
+
+    logging.info(f"Model response : {response}")
+
+    return response
+
+
+
+# ngrok http 
 
 # 영어로 번역하는 함수
 def translate_to_english(text):
@@ -30,12 +62,13 @@ def translate_to_english(text):
 '''
  def get_embedding(text: str, model="text-embedding-3-small"):
     return openai.Embedding.create(input=text, model=model)['data'][0]['embedding']
-'''
+
 
 def get_tfidf(text, tfidf_model = TfidfVectorizer()):
     # 입력된 텍스트를 TF-IDF 특징 벡터로 변환
     text_vector = svm_model.predict([text])
     return text_vector
+'''
 
 recreate_model=False
 if not os.path.isfile('mbti_svm.pkl'):
@@ -65,6 +98,7 @@ if recreate_model:
 else:
     svm_model = joblib.load('mbti_svm.pkl')
 
+'''
 recreate_user_translated = False
 if not os.path.isfile('user_translated.pkl'):
     recreate_user_translated = True
@@ -81,7 +115,7 @@ else:
 
 #사용자 텍스트 입력
 user_text = input()
-'''
+
 # MBTI 예측 모델을 통해 사용자의 MBTI 예측
 print(user_text_translated)
 user_text_vector = get_tfidf(user_text_translated)  # 벡터화
@@ -91,13 +125,15 @@ user_vector.append(user_text_vector)
 
 # 배열에 저장된 사용자 대화 임베딩을 NumPy 배열로 변환
 user_embeddings = np.array(user_embeddings)
-'''
+
 # MBTI 예측 
 # user_translated에 사용자 입력을 계속 추가하여 MBTI를 갱신
 user_translated.append(translate_to_english(user_text))
 combined_text = ' '.join(map(str, user_translated))  # 두 개의 텍스트를 공백을 이용하여 통합
 combined_prediction = svm_model.predict([combined_text])  # 통합된 텍스트를 모델에 입력하여 예측 #정확도가 가장 높은 mbti를 결과로 반환
+'''
 
+'''
 # all_messages 생성
 recreate_all_messages=False
 if not os.path.isfile('all_messages.pkl'):
@@ -106,11 +142,11 @@ if not os.path.isfile('all_messages.pkl'):
 if recreate_all_messages:    
     all_messages = [
     {"role": "system", "content": 
-     f'''
+     f
      사용자의 MBTI 유형은 {combined_prediction}입니다. 
      당신은 상담모델로 사용자의 MBTI를 고려하여 답변하시길 바랍니다. 
      사용자는 한국인으로 한글로 답변해주시길 바랍니다.
-     '''},
+     },
     {"role": "user", "content": user_text}]
 else:
     try:
@@ -135,7 +171,8 @@ print(response)
 all_messages.append({"role": "assistant", "content": response})
 print(all_messages)
 # 코드가 반복 실행되면서 all_messages, user_embeddings에 각각 텍스트들이 계속 저장
-with open('all_messages.pkl', 'wb') as file:
+ with open('all_messages.pkl', 'wb') as file:
     pickle.dump(all_messages, file)
 with open('user_translated.pkl', 'wb') as file:
     pickle.dump(user_translated, file)
+'''
