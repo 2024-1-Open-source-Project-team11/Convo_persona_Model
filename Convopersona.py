@@ -6,6 +6,7 @@ from sklearn.pipeline import Pipeline
 import joblib
 import os
 import logging
+from typing import List
 from pydantic import BaseModel
 from fastapi import FastAPI
 import openai 
@@ -24,7 +25,7 @@ openai.api_key = os.getenv("API_KEY")
 app = FastAPI()
 
 class UserRequest(BaseModel):
-    user_prompt_list : list
+    user_prompt_list : List[str] = []
 
 class PredictionResult(BaseModel):
     mbti : str
