@@ -47,8 +47,6 @@ def predict_mbti(request : UserRequest):
 
     return response
 
-
-
 # ngrok http 
 
 # 영어로 번역하는 함수
