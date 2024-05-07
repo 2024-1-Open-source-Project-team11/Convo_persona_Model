@@ -19,60 +19,6 @@ def get_api_key():
         raise ValueError("API 키를 찾을 수 없습니다. 환경 변수를 설정하세요.")
     return api_key
 '''
-load_dotenv()
-openai.api_key = os.getenv("API_KEY")
-
-app = FastAPI()
-
-class UserRequest(BaseModel):
-    user_prompt_list : List[str] = []
-
-class PredictionResult(BaseModel):
-    mbti : str
-
-@app.get("/")
-def home():
-    return "hello FastAPI Server"
-
-@app.post("/mbti_prediction", response_model=PredictionResult)
-def predict_mbti(request : UserRequest):
-    #한글로 받아온 user_prompt 영어로 번역
-    user_prompt_list = request.user_prompt_list
-    user_prompt_english = translate_to_english(user_prompt_list)
-
-    # MBTI 예측 
-    combined_text = ' '.join(map(str, user_prompt_english))  # 두 개의 텍스트를 공백을 이용하여 통합
-    combined_prediction = svm_model.predict([combined_text])  # 통합된 텍스트를 모델에 입력하여 예측 #정확도가 가장 높은 mbti를 결과로 반환
-
-    response = {
-        'mbti' : combined_prediction[0]
-    }
-
-    logging.info(f"Model response : {response}")
-
-    return response
-
-
-
-# 영어로 번역하는 함수
-def translate_to_english(text):
-    completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content":f"Translate the following Korean text to English: '{text}'"}],
-    )
-    return completion.choices[0].message.content
-
-'''
- def get_embedding(text: str, model="text-embedding-3-small"):
-    return openai.Embedding.create(input=text, model=model)['data'][0]['embedding']
-
-
-def get_tfidf(text, tfidf_model = TfidfVectorizer()):
-    # 입력된 텍스트를 TF-IDF 특징 벡터로 변환
-    text_vector = svm_model.predict([text])
-    return text_vector
-'''
-
 recreate_model=False
 if not os.path.isfile('mbti_svm.pkl'):
     recreate_model=True
@@ -101,7 +47,58 @@ if recreate_model:
 else:
     svm_model = joblib.load('mbti_svm.pkl')
 
+load_dotenv()
+openai.api_key = os.getenv("API_KEY")
+
+app = FastAPI()
+
+class UserRequest(BaseModel):
+    user_prompt_list : List[str]
+
+class PredictionResult(BaseModel):
+    mbti : str
+
+@app.get("/")
+def home():
+    return "hello FastAPI Server"
+
+@app.post("/mbti_prediction")
+def predict_mbti(request : UserRequest):
+    #한글로 받아온 user_prompt 영어로 번역
+    user_prompt_list = request.user_prompt_list
+    print(user_prompt_list)
+    user_prompt_english = translate_to_english(user_prompt_list)
+
+    # MBTI 예측
+    combined_text = ' '.join(map(str, user_prompt_english))  # 두 개의 텍스트를 공백을 이용하여 통합
+    combined_prediction = svm_model.predict([combined_text])  # 통합된 텍스트를 모델에 입력하여 예측 #정확도가 가장 높은 mbti를 결과로 반환
+
+    response = {
+        'mbti' : combined_prediction[0]
+    }
+
+    logging.info(f"Model response : {response}")
+
+    return response
+
+# 영어로 번역하는 함수
+def translate_to_english(text):
+    completion = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content":f"Translate the following Korean text to English: '{text}'"}],
+    )
+    return completion.choices[0].message.content
+
 '''
+ def get_embedding(text: str, model="text-embedding-3-small"):
+    return openai.Embedding.create(input=text, model=model)['data'][0]['embedding']
+
+
+def get_tfidf(text, tfidf_model = TfidfVectorizer()):
+    # 입력된 텍스트를 TF-IDF 특징 벡터로 변환
+    text_vector = svm_model.predict([text])
+    return text_vector
+
 recreate_user_translated = False
 if not os.path.isfile('user_translated.pkl'):
     recreate_user_translated = True
