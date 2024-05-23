@@ -1,4 +1,4 @@
 # ConvoPersona_Model
 
 - Convopersona.py를 통해 수행
-- mbti_svm.pkl에 모델 저장
+- tfidf_and_svm_model.pkl에 모델 및 fitted TFIDF 저장
