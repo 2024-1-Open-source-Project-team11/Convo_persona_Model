@@ -35,8 +35,9 @@ def predict_mbti(request : UserRequest):
     user_prompt_list = request.user_prompt_list
     print(user_prompt_list)
     user_prompt_english = translate_to_english(user_prompt_list)
-    print(user_prompt_english)
-    combined_prediction = svm_model.predict([user_prompt_english])  # 통합된 텍스트를 모델에 입력하여 예측 #정확도가 가장 높은 mbti를 결과로 반환
+    print(user_prompt_english)  
+    user_prompt_english_tfidf = tfidf.transform([user_prompt_english])
+    combined_prediction = svm_model.predict(user_prompt_english_tfidf)  # 통합된 텍스트를 모델에 입력하여 예측 #정확도가 가장 높은 mbti를 결과로 반환
     print(combined_prediction)
 
     response = {
@@ -56,7 +57,7 @@ def translate_to_english(text):
     return completion.choices[0].message.content
 
 recreate_model=False
-if not os.path.isfile('mbti_svm.pkl'):
+if not os.path.isfile('tfidf_and_svm_model.pkl'):
     recreate_model=True
 
 if recreate_model:    
@@ -87,7 +88,7 @@ if recreate_model:
     print(report)
 
     # 모델 저장
-    joblib.dump(svm_model, 'mbti_svm.pkl')
+    joblib.dump((tfidf, svm_model), 'tfidf_and_svm_model.pkl')
 else:
-    svm_model = joblib.load('mbti_svm.pkl')
+    tfidf, svm_model = joblib.load('tfidf_and_svm_model.pkl')
 
