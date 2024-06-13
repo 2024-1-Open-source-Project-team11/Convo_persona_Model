@@ -1,0 +1,9 @@
+- 최종 모델: LinearSVC(C=1)
+- 모델 비교
+    - LinearSVC + crossval or optuna => LinearSVC(C=1) accuracy: 0.84
+    - LogisticRegression + optuna
+    - Naive Bayes + optuna
+    - RandomForest + optuna
+    - XGBoost + optuna => 데이터 개수 이슈로 할당X 
+    - LightGBM + optuna 
+    - Catboost + optuna 
